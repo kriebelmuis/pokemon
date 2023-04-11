@@ -19,7 +19,7 @@ app.get("/", async (req: Request<PokemonRequest>, res: Response) => {
     let data;
     try {
         data = await repository.getpokemonbytype(req.query.type);
-    } catch(err) {
+    } catch (err) {
         if (err instanceof Error) {
             res.send(err.message);
         } else {
@@ -33,7 +33,7 @@ async function indexallpokemon() {
     resetpokemons();
     console.log("Indexing all pokemon")
     await repository.getpokemon(config.allPokemon);
-    app.listen(config.port);
+    app.listen(80);
     await repository.writetofile("cache");
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
@@ -45,7 +45,7 @@ async function enumarablyindexallpokemon() {
         await repository.getpokemon(config.toRequest);
         console.log(`Indexation progress: ${i}/${config.requestMultiplier}`);
     }
-    app.listen(config.port);
+    app.listen(80);
     await repository.writetofile("cache");
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
@@ -57,6 +57,6 @@ fs.access("./cache.json", (err: any) => {
         return;
     }
     loadpokemons(require("../cache.json"));
-    app.listen(config.port);
+    app.listen(80);
     console.log("Reading from cache");
 })

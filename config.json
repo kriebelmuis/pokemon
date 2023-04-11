@@ -1,5 +1,4 @@
 {
-    "port": 90,
     "allPokemon": 250,
     "toRequest": 50,
     "requestMultiplier": 5,

@@ -42,7 +42,7 @@ export default class PokemonRepository {
         console.log("File written");
     }
 
-    public async getpokemonbytype(type: any ): Promise<Pokemon[]> {
+    public async getpokemonbytype(type: any): Promise<Pokemon[]> {
         type = type as string;
         if (!type)
             return Promise.reject(new Error("Type is missing"));

@@ -8,7 +8,7 @@ export async function fetchalltypes() {
     return (await axios.get("https://pokeapi.co/api/v2/type/")).data.results
 }
 
-export async function fetchpokemoninfo(nameorid : string | number): Promise<PokemonDTO | null> {
+export async function fetchpokemoninfo(nameorid: string | number): Promise<PokemonDTO | null> {
     return (await axios.get(`https://pokeapi.co/api/v2/pokemon/${nameorid}/`)).data;
 }
 
@@ -17,7 +17,7 @@ export async function fetchallpokemon() {
     return (await axios.get("https://pokeapi.co/api/v2/pokemon/?limit=811")).data.results
 }
 
-export async function fetchpokemon(limit : number): Promise<Types[] | null> {
+export async function fetchpokemon(limit: number): Promise<Types[] | null> {
     console.log(`Fetching all pokemon with limit ${limit} and offset ${offset}`);
     var data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/?limit=${limit}&offset=${offset}/`)).data.results
     await setoffset(offset + limit);
