@@ -1,12 +1,12 @@
-import { promises } from "fs";
-
 import { Pokemon, PokemonDTO, PokemonType, Types } from "./pokemonmodel";
 
-export let pokemons : Pokemon[] = [];
+export let pokemons: Pokemon[] = [];
 
-export async function map(poke : PokemonDTO[]): Promise<Pokemon[]> {
+export async function resetpokemons() { pokemons = [] }
+
+export async function map(poke: PokemonDTO[]): Promise<Pokemon[]> {
     poke.forEach((pokemon: any) => {
-        let types : PokemonType[] = pokemon.types.map((element: { type: { name: Types } }) => element.type.name);
+        let types: PokemonType[] = pokemon.types.map((element: { type: { name: Types } }) => element.type.name);
         pokemons.push({
             name: pokemon.name,
             id: pokemon.id,
@@ -15,9 +15,4 @@ export async function map(poke : PokemonDTO[]): Promise<Pokemon[]> {
         });
     })
     return pokemons;
-}
-
-export async function writetofile(filename : string) {
-    await promises.writeFile(`./${filename}.json`, JSON.stringify(pokemons));
-    console.log("File written");
 }

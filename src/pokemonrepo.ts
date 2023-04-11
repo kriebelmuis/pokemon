@@ -1,12 +1,13 @@
-import { error } from "console";
+import { promises } from "fs";
+
 import { fetchpokemon, fetchpokemoninfo, fetchalltypes } from "./fetchpokemon";
 import { map, pokemons } from "./mappokemon";
 import { PokemonDTO, Pokemon } from "./pokemonmodel";
 
 export let offset = 0;
-export let types : string[] = [];
+export let types: string[] = [];
 
-export async function setoffset(num : number) { offset = num }
+export async function setoffset(num: number) { offset = num }
 
 async function filltypes() {
     var tmpTypes = await fetchalltypes();
@@ -15,7 +16,7 @@ async function filltypes() {
 filltypes();
 
 export default class PokemonRepository {
-    public async getpokemon(amount : number) {
+    public async getpokemon(amount: number) {
         let pokemondtos: PokemonDTO[] = [];
         let pokemondto = await fetchpokemon(amount)
         if (!pokemondto)
@@ -36,7 +37,12 @@ export default class PokemonRepository {
         return await map(pokemondtos);
     }
 
-    public async getpokemonbytype(type : any ): Promise<Pokemon[]> {
+    public async writetofile(filename: string) {
+        await promises.writeFile(`./${filename}.json`, JSON.stringify(pokemons));
+        console.log("File written");
+    }
+
+    public async getpokemonbytype(type: any ): Promise<Pokemon[]> {
         type = type as string;
         if (!type)
             return Promise.reject(new Error("Type is missing"));
@@ -44,9 +50,9 @@ export default class PokemonRepository {
         if (types.filter((t) => t === lowercasetype).length !== 0) {
             var data = pokemons.filter(pokemon => pokemon.type?.includes(lowercasetype));
             if (!data)
-            return Promise.reject(new Error("Invalid type"));
+                return Promise.reject(new Error("Invalid type"));
             if (data.length === 0)
-            return Promise.reject(new Error("No results found"));
+                return Promise.reject(new Error("No results found"));
             return data;
         } else {
             return Promise.reject(new Error(`Type ${lowercasetype} does not exist`));

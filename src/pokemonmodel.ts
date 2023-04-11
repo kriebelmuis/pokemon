@@ -1,19 +1,19 @@
 export class PokemonDTO {
-    base_experience? : number;
-    is_default? : boolean;
-    location_area_encounters? : string;
-    order? : number;
-    weight? : number;
-    id? : number;
-    name? : string;
-    height? : number;
-    types? : Types[];
-    stats? : Stats[];
-    sprites? : Sprites[];
-    species? : Species[];
-    past_types? : [];
-    moves? : Moves[];
-    forms? : Forms[];
+    base_experience?: number;
+    is_default?: boolean;
+    location_area_encounters?: string;
+    order?: number;
+    weight?: number;
+    id?: number;
+    name?: string;
+    height?: number;
+    types?: Types[];
+    stats?: Stats[];
+    sprites?: Sprites[];
+    species?: Species[];
+    past_types?: [];
+    moves?: Moves[];
+    forms?: Forms[];
 }
 
 export class Abilities {

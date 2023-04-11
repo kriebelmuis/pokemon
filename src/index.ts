@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 
-import { Pokemon, Types } from "./pokemonmodel";
-import { pokemons } from "./mappokemon";
+import { pokemons, resetpokemons } from "./mappokemon";
 import PokemonRepository from "./pokemonrepo";
+import fs from "fs";
 
 const repository = new PokemonRepository();
 const app = express();
@@ -15,7 +15,7 @@ interface PokemonRequest {
     type: string;
 }
 
-app.get("/", async (req : Request<PokemonRequest>, res : Response) => {
+app.get("/", async (req: Request<PokemonRequest>, res: Response) => {
     let data;
     try {
         data = await repository.getpokemonbytype(req.query.type);
@@ -27,17 +27,19 @@ app.get("/", async (req : Request<PokemonRequest>, res : Response) => {
         }
     }
     res.send(data);
+    repository.writetofile("cache");
 })
 
 async function indexallpokemon() {
+    resetpokemons();
     console.log("Indexing all pokemon")
-    await repository.getpokemon(80);
+    await repository.getpokemon(allPokemon);
     app.listen(80);
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
-indexallpokemon();
 
 async function enumarablyindexallpokemon() {
+    resetpokemons();
     while (i < 9) {
         i++;
         await repository.getpokemon(toRequest);
@@ -46,3 +48,12 @@ async function enumarablyindexallpokemon() {
     app.listen(80);
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
+
+fs.access("./cache.json", (err: any) => {
+    if (err) {
+        console.log("No cache found, creating")
+        indexallpokemon();
+        return;
+    }
+    console.log("Reading from cache")
+})
