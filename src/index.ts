@@ -53,7 +53,12 @@ async function enumarablyindexallpokemon() {
 fs.access("./cache.json", (err: any) => {
     if (err || config.forceCache) {
         console.log("No cache found, creating");
-        indexallpokemon();
+        if (config.enumarably) {
+            enumarablyindexallpokemon();
+        }
+        if (!config.enumarably) {
+            indexallpokemon();
+        }
         return;
     }
     loadpokemons(require("../cache.json"));
