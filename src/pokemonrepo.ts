@@ -1,3 +1,4 @@
+import { error } from "console";
 import { fetchpokemon, fetchpokemoninfo, fetchalltypes } from "./fetchpokemon";
 import { map, pokemons } from "./mappokemon";
 import { PokemonDTO, Pokemon } from "./pokemonmodel";
@@ -35,12 +36,21 @@ export default class PokemonRepository {
         return await map(pokemondtos);
     }
 
-    public async getpokemonbytype(type : string): Promise<Pokemon[] | null> {
-        var type = type.toLowerCase();
-        if (types.filter((t) => t === type).length !== 0) {
-            return pokemons.filter((p) => p.type === type);
+    public async getpokemonbytype(type : any ): Promise<Pokemon[] | null> {
+        type = type as string;
+        if (!type)
+            console.log("m")
+            //throw new Error("Type is missing");
+        var lowercasetype = type.toLowerCase();
+        if (types.filter((t) => t === lowercasetype).length !== 0) {
+            var data = pokemons.filter((p) => p.type === lowercasetype);
+            if (!data)
+                throw new Error("Invalid type")
+            if (data.length === 0)
+                throw new Error("No results found");
+            return data;
+        } else {
+            throw new Error(`Type ${lowercasetype} does not exist`);
         }
-        console.log(`Type ${type} does not exist`);
-        return null;
     }
 }

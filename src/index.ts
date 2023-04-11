@@ -16,16 +16,11 @@ interface PokemonRequest {
 }
 
 app.get("/", async (req : Request<PokemonRequest>, res : Response) => {
-    if (!req.query.type)
-        res.send("No type sent")
-    var data = await repository.getpokemonbytype((req.query.type as string).toLowerCase());
-    if (!data) {
-        res.send("Invalid type")
-        return;
-    }
-    if (data.length === 0) {
-        res.send("No results found");
-        return;
+    let data;
+    try {
+        data = await repository.getpokemonbytype(req.query.type);
+    } catch(err) {
+        res.send(err);
     }
     res.send(data);
 })
