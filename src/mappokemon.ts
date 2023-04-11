@@ -4,6 +4,8 @@ export let pokemons: Pokemon[] = [];
 
 export async function resetpokemons() { pokemons = [] }
 
+export async function loadpokemons(pm : any) { pokemons = pm }
+
 export async function map(poke: PokemonDTO[]): Promise<Pokemon[]> {
     poke.forEach((pokemon: any) => {
         let types: PokemonType[] = pokemon.types.map((element: { type: { name: Types } }) => element.type.name);

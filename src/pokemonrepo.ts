@@ -38,7 +38,7 @@ export default class PokemonRepository {
     }
 
     public async writetofile(filename: string) {
-        await promises.writeFile(`./${filename}.json`, JSON.stringify(pokemons));
+        await promises.writeFile(`./${filename}.json`, JSON.stringify(pokemons, null, 4));
         console.log("File written");
     }
 
