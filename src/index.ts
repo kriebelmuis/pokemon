@@ -20,14 +20,18 @@ app.get("/", async (req : Request<PokemonRequest>, res : Response) => {
     try {
         data = await repository.getpokemonbytype(req.query.type);
     } catch(err) {
-        res.send(err);
+        if (err instanceof Error) {
+            res.send(err.message);
+        } else {
+            res.send("Unknown error has occured")
+        }
     }
     res.send(data);
 })
 
 async function indexallpokemon() {
     console.log("Indexing all pokemon")
-    await repository.getpokemon(allPokemon);
+    await repository.getpokemon(80);
     app.listen(80);
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }

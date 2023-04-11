@@ -105,5 +105,9 @@ export class Pokemon {
     id? : number;
     name? : string;
     height? : number;
-    type? : string;
+    type? : PokemonType[];
+}
+
+export class PokemonType {
+    name? : string;
 }

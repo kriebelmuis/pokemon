@@ -36,21 +36,20 @@ export default class PokemonRepository {
         return await map(pokemondtos);
     }
 
-    public async getpokemonbytype(type : any ): Promise<Pokemon[] | null> {
+    public async getpokemonbytype(type : any ): Promise<Pokemon[]> {
         type = type as string;
         if (!type)
-            console.log("m")
-            //throw new Error("Type is missing");
+            return Promise.reject(new Error("Type is missing"));
         var lowercasetype = type.toLowerCase();
         if (types.filter((t) => t === lowercasetype).length !== 0) {
-            var data = pokemons.filter((p) => p.type === lowercasetype);
+            var data = pokemons.filter(pokemon => pokemon.type?.includes(lowercasetype));
             if (!data)
-                throw new Error("Invalid type")
+            return Promise.reject(new Error("Invalid type"));
             if (data.length === 0)
-                throw new Error("No results found");
+            return Promise.reject(new Error("No results found"));
             return data;
         } else {
-            throw new Error(`Type ${lowercasetype} does not exist`);
+            return Promise.reject(new Error(`Type ${lowercasetype} does not exist`));
         }
     }
 }
