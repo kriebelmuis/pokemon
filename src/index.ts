@@ -45,12 +45,10 @@ const connect = () => {
         await clearteams();
         const teamone = selectrandom(config.teamSize);
         const teamtwo = selectrandom(config.teamSize);
-        teamone.forEach(async element => {
-            await insertpokemon(element.id, element.name, 1)
-        });
-        teamtwo.forEach(async element => {
-            await insertpokemon(element.id, element.name, 2)
-        });
+        
+        await Promise.all(teamone.map(element => insertpokemon(element.id, element.name, 1)));
+        await Promise.all(teamtwo.map(element => insertpokemon(element.id, element.name, 2)));
+        
         console.log("All pokemons ready");
     });
 };
@@ -145,12 +143,7 @@ async function enumarablyindexallpokemon() {
 fs.access("./cache.json", (err: any) => {
     if (err || config.forceCache) {
         console.log("No cache found, creating");
-        if (config.enumarably) {
-            enumarablyindexallpokemon();
-        }
-        if (!config.enumarably) {
-            indexallpokemon();
-        }
+        config.enumarably ? enumarablyindexallpokemon() : indexallpokemon();
         return;
     }
     loadpokemons(require("../cache.json"));
