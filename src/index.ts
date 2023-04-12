@@ -45,12 +45,13 @@ const connect = () => {
         await clearteams();
         const teamone = selectrandom(config.teamSize);
         const teamtwo = selectrandom(config.teamSize);
-        teamone.forEach(element => {
-            insertpokemon(element.id, element.name, 1)
+        teamone.forEach(async element => {
+            await insertpokemon(element.id, element.name, 1)
         });
-        teamtwo.forEach(element => {
-            insertpokemon(element.id, element.name, 2)
+        teamtwo.forEach(async element => {
+            await insertpokemon(element.id, element.name, 2)
         });
+        console.log("All pokemons ready");
     });
 };
 connect();
@@ -86,7 +87,7 @@ async function clearteams() {
     });
 }
 
-function insertpokemon(id: number | undefined, name: string | undefined, team: number | undefined) {
+async function insertpokemon(id: number | undefined, name: string | undefined, team: number | undefined) {
     if (id || name || team !== undefined) {
         console.log(`Inserting pokemon with id ${id} name ${name} in table team${team}`);
         db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, "${name}");`, (err, result) => {
@@ -94,7 +95,7 @@ function insertpokemon(id: number | undefined, name: string | undefined, team: n
                 console.log(err);
                 return;
             }
-            console.log(result);
+            console.log(`Successfully added pokemon ${name} in team ${team}`);
         })
     } else {
         console.log(`One of the properties of ${name} are undefined`)
