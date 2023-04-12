@@ -23,13 +23,13 @@ services:
     restart: always
     working_dir: /app
     volumes:
-        - pokedata:/var/lib/mysql
+      - pokedata:/var/lib/mysql
     environment:
-        - MYSQL_DATABASE=pokemon
-        - MYSQL_USER=root
-        - MYSQL_PASSWORD=password
-        - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=pokemon
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
     ports:
-        - '39002:3306'
+      - '39002:3306'
 volumes:
   pokedata:
