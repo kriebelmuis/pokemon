@@ -27,9 +27,9 @@ async function waitforready() {
     while (!ready) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         console.log("Waiting for pokemons")
-        newpokemons = pokemons;
     }
     console.log("Pokemons retrieved")
+    newpokemons = pokemons.slice();
 }
 
 const connect = () => {
@@ -42,61 +42,59 @@ const connect = () => {
         }
         console.log("Connected");
         await waitforready();
-        await cleartable();
+        await clearteams();
         const teamone = selectrandom(config.teamSize);
         const teamtwo = selectrandom(config.teamSize);
         teamone.forEach(element => {
-            console.log(element)
             insertpokemon(element.id, element.name, 1)
         });
         teamtwo.forEach(element => {
-            insertpokemon(element.id, element.name, 1)
+            insertpokemon(element.id, element.name, 2)
         });
     });
 };
 connect();
 
-function disconnect() {
-    db.end(function(err) {
-        if (err) {
-            console.log(err.message);
-        }
-        console.log('Database disconnected');
-    });
-}
 
 function selectrandom(teamsize: number) {
     console.log(`Selecting random ${teamsize} pokemon`)
     const array = [];
     for (let i = 0; i < teamsize; i++) {
         const index = Math.floor(Math.random() * newpokemons.length);
+        console.log(`Randomized index ${index}`)
         array.push(newpokemons[index])
-        console.log(newpokemons[index])
         newpokemons.splice(index, 1)
     }
     return array;
 }
 
-async function cleartable() {
-    console.log("Clearing table")
-    db.query(`DELETE FROM ${config.tableName};`, (err, result, fields) => {
+async function clearteams() {
+    console.log("Clearing teams")
+    db.query(`DELETE FROM team1;`, (err, result) => {
         if (err) {
             console.log(err);
             return;
         }
-        console.log(result);
+        console.log("Successfully wiped team 1");
+    });
+    db.query(`DELETE FROM team2;`, (err, result) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log("Successfully wiped team 2, all teams");
     });
 }
 
 function insertpokemon(id: number | undefined, name: string | undefined, team: number | undefined) {
     if (id || name || team !== undefined) {
-        db.query(`INSERT INTO ${config.tableName} (${id}, ${name}, ${team});`, (err, result, fields) => {
+        console.log(`Inserting pokemon with id ${id} name ${name} in table team${team}`);
+        db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, ${name});`, (err, result) => {
             if (err || typeof id !== "number") {
-                console.log(err)
+                console.log(err);
                 return;
             }
             console.log(result);
-            id++;
         })
     } else {
         console.log(`One of the properties of ${name} are undefined`)
