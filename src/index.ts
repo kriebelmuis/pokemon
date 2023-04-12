@@ -36,7 +36,7 @@ const connect = () => {
     console.log("Attempting to connect");
     db.connect(async (err) => {
         if (err) {
-            console.log(err);
+            console.log(`Error code: ${err.code}`);
             setTimeout(connect, 3000);
             return;
         }
