@@ -89,7 +89,7 @@ async function clearteams() {
 function insertpokemon(id: number | undefined, name: string | undefined, team: number | undefined) {
     if (id || name || team !== undefined) {
         console.log(`Inserting pokemon with id ${id} name ${name} in table team${team}`);
-        db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, ${name});`, (err, result) => {
+        db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, "${name}");`, (err, result) => {
             if (err || typeof id !== "number") {
                 console.log(err);
                 return;
