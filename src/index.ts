@@ -23,6 +23,15 @@ const db = mysql2.createConnection({
     database: "pokemon"
 });
 
+process.on('exit', onexit);
+process.on('SIGINT', onexit);
+
+function onexit() {
+    console.log("Exit detected, clearing teams and closing database connection.");
+    clearteams();
+    db.end();
+}
+
 async function waitforready() {
     while (!ready) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -69,16 +78,16 @@ function selectrandom(teamsize: number) {
 
 async function clearteams() {
     console.log("Clearing teams")
-    db.query(`DELETE FROM team1;`, (err, result) => {
+    db.query(`DELETE FROM team1;`, (err) => {
         if (err) {
-            console.log(err);
+            console.log(err.message);
             return;
         }
         console.log("Successfully wiped team 1");
     });
-    db.query(`DELETE FROM team2;`, (err, result) => {
+    db.query(`DELETE FROM team2;`, (err) => {
         if (err) {
-            console.log(err);
+            console.log(err.message);
             return;
         }
         console.log("Successfully wiped team 2, all teams");
@@ -88,9 +97,9 @@ async function clearteams() {
 async function insertpokemon(id: number | undefined, name: string | undefined, team: number | undefined) {
     if (id || name || team !== undefined) {
         console.log(`Inserting pokemon with id ${id} name ${name} in table team${team}`);
-        db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, "${name}");`, (err, result) => {
-            if (err || typeof id !== "number") {
-                console.log(err);
+        db.query(`INSERT INTO team${team} (id, name) VALUES (${id}, "${name}");`, (err) => {
+            if (err) {
+                console.log(err.message);
                 return;
             }
             console.log(`Successfully added pokemon ${name} in team ${team}`);
