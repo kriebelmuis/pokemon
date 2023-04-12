@@ -1,0 +1,32 @@
+version: '0.1'
+
+services:
+  local-test:
+    container_name: backend
+    image: pokemon
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - '3000:3000'
+    links:
+      - mariadb:mariadb
+    expose:
+      - '3000'
+    volumes:
+      - ".:/app"
+    depends_on:
+      - mariadb
+  mariadb:
+    image: 'mariadb:10.6'
+    container_name: omar_db
+    working_dir: /app
+    volumes:
+        - .:/app:delegated
+    environment:
+        - MYSQL_DATABASE=pokemon
+        - MYSQL_USER=root
+        - MYSQL_PASSWORD=password
+        - MYSQL_ROOT_PASSWORD=password
+    ports:
+        - '39002:3306'  

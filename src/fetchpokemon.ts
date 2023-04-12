@@ -19,7 +19,7 @@ export async function fetchallpokemon() {
 
 export async function fetchpokemon(limit: number): Promise<Types[] | null> {
     console.log(`Fetching all pokemon with limit ${limit} and offset ${offset}`);
-    var data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/?limit=${limit}&offset=${offset}/`)).data.results
+    const data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/?limit=${limit}&offset=${offset}/`)).data.results
     await setoffset(offset + limit);
     return data;
 }
