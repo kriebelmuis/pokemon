@@ -1,5 +1,6 @@
 # VS code
 .vscode/
+cache.json
 
 # Logs
 logs
