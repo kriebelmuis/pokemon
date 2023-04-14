@@ -5,5 +5,7 @@
     "forceCache": false,
     "enumarably": false,
     "tableName": "pokemons",
-    "teamSize": 5
+    "teamSize": 5,
+    "minrandHealth": 100,
+    "maxrandHealth": 200
 }

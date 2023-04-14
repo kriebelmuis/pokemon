@@ -106,6 +106,7 @@ export class Pokemon {
     name?: string;
     height?: number;
     type?: PokemonType[];
+    hp?: number;
 }
 
 export class PokemonType {
