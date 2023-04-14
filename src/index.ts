@@ -27,7 +27,6 @@ process.on('exit', onexit);
 process.on('SIGINT', onexit);
 
 function onexit() {
-    console.log("Exit detected, clearing teams and closing database connection.");
     clearteams();
     db.end();
 }
@@ -55,10 +54,18 @@ const connect = () => {
         const teamone = selectrandom(config.teamSize);
         const teamtwo = selectrandom(config.teamSize);
 
-        await Promise.all(teamone.map(element => insertpokemon(element.id, element.name, 1)));
-        await Promise.all(teamtwo.map(element => insertpokemon(element.id, element.name, 2)));
+        await Promise.all(teamone.map(async element => await insertpokemon(element.id, element.name, 1)));
+        await Promise.all(teamtwo.map(async element => await insertpokemon(element.id, element.name, 2)));
 
         console.log("All pokemons ready");
+
+        db.query("SELECT * FROM team1;", (err, result) => {
+            console.log(`Team 1:\n${JSON.stringify(result, null, 4)}`)
+        })
+
+        db.query("SELECT * FROM team2;", (err, result) => {
+            console.log(`Team 2:\n${JSON.stringify(result, null, 4)}`)
+        })
     });
 };
 connect();
@@ -160,5 +167,3 @@ fs.access("./cache.json", (err: any) => {
     ready = true;
     console.log("Reading from cache");
 })
-
-console.log("Docker ready")
