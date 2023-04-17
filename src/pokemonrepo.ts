@@ -1,11 +1,12 @@
 import { promises } from "fs";
 
-import { fetchpokemon, fetchpokemoninfo, fetchalltypes } from "./fetchpokemon";
-import { map, pokemons } from "./mappokemon";
-import { PokemonDTO, Pokemon, PokemonType } from "./pokemonmodel";
+import { fetchpokemon, fetchpokemoninfo, fetchalltypes, fetchdamagerelations } from "./fetchpokemon";
+import { map, mapsingle, pokemons } from "./mappokemon";
+import { PokemonDTO, Pokemon, PokemonType, DamageRelations, AttackType } from "./pokemonmodel";
 
 export let offset = 0;
 export let types: string[] = [];
+export let attacktypes: AttackType[] = [];
 
 export async function setoffset(num: number) { offset = num }
 
@@ -17,7 +18,6 @@ filltypes();
 
 export default class PokemonRepository {
     public async getpokemon(amount: number) {
-        let pokemondtos: PokemonDTO[] = [];
         let pokemondto = await fetchpokemon(amount)
         if (!pokemondto)
             throw new Error("Couldn't retrieve pokemons");
@@ -26,15 +26,18 @@ export default class PokemonRepository {
                 console.log("Invalid name");
                 return;
             }
-            let pokedto = await fetchpokemoninfo(element.name)
+            let dmgrelat = await fetchdamagerelations(element.name);
+            if (!dmgrelat) {
+                console.log("Invalid damage relations");
+                return;
+            }
+            const pokedto = fetchpokemoninfo(element.name)
             if (!pokedto) {
                 console.log("Invalid pokeinfo");
                 return;
             }
-            pokemondtos.push(pokedto as PokemonDTO);
+            return await mapsingle(element, dmgrelat);
         }
-        console.log("Mapping data");
-        return await map(pokemondtos);
     }
 
     public async writecache() {

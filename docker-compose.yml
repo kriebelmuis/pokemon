@@ -19,7 +19,7 @@ services:
       - mariadb
   mariadb:
     image: 'mariadb:10.6'
-    container_name: omar_db
+    container_name: database
     restart: always
     working_dir: /app
     volumes:

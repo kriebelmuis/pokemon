@@ -1,11 +1,15 @@
 import axios from "axios"
 
-import { PokemonDTO, Types } from "./pokemonmodel";
+import { DamageRelations, PokemonDTO, Types } from "./pokemonmodel";
 import { setoffset, offset } from "./pokemonrepo";
 
 export async function fetchalltypes() {
     console.log("Fetching all types");
     return (await axios.get("https://pokeapi.co/api/v2/type/")).data.results
+}
+
+export async function fetchdamagerelations(nameorid: string | number | undefined): Promise<DamageRelations[] | null> {
+    return (await axios.get(`https://pokeapi.co/api/v2/type/${nameorid}/`)).data.damage_relations;
 }
 
 export async function fetchpokemoninfo(nameorid: string | number): Promise<PokemonDTO | null> {

@@ -104,11 +104,58 @@ export class Stat {
 export class Pokemon {
     id?: number;
     name?: string;
-    height?: number;
+    team?: number;
     type?: PokemonType[];
     hp?: number;
+    dmgrelat?: DamageRelations[];
 }
 
 export class PokemonType {
     name?: string;
+}
+
+//----------
+
+export class DamageRelations {
+    double_damage_from?: DoubleDamageFrom[]
+    double_damage_to?: DoubleDamageTo[];
+    half_damage_from?: HalfDamageFrom[];
+    half_damage_to?: HalfDamageTo[];
+    no_damage_from?: NoDamageFrom[];
+    no_damage_to?: NoDamageTo[];
+}
+
+export class DoubleDamageFrom {
+    name?: string;
+    url?: string;
+}
+
+export class DoubleDamageTo {
+    name?: string;
+    url?: string;
+}
+
+export class HalfDamageFrom {
+    name?: string;
+    url?: string;
+}
+
+export class HalfDamageTo {
+    name?: string;
+    url?: string;
+}
+
+export class NoDamageFrom {
+    name?: string;
+    url?: string;
+}
+
+export class NoDamageTo {
+    name?: string;
+    url?: string;
+}
+
+export class AttackType {
+    name?: string;
+    damage?: number;
 }
