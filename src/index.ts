@@ -250,7 +250,7 @@ async function indexallpokemon() {
     console.log("Indexing all pokemon")
     var data = await repository.getpokemon(config.allPokemon);
     loadpokemons(data);
-    app.listen(80);
+    app.listen(config.port);
     await repository.writecache(data);
     ready = true;
     console.log(`Finished indexing ${pokemons.length} pokemon`);
@@ -264,7 +264,7 @@ async function enumarablyindexallpokemon() {
         console.log(`Indexation progress: ${i}/${config.requestMultiplier}`);
     }
     loadpokemons(pokes);
-    app.listen(80);
+    app.listen(config.port);
     await repository.writecache(pokes);
     ready = true;
     console.log(`Finished indexing ${pokemons.length} pokemon`);
@@ -277,7 +277,7 @@ fs.access("./cache.json", async (err: any) => {
         return;
     }
     loadpokemons(require("../cache.json"));
-    app.listen(80);
+    app.listen(config.port);
     ready = true;
     console.log("Reading from cache");
 })
