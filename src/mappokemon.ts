@@ -1,4 +1,4 @@
-import { DamageRelations, Pokemon, PokemonDTO, PokemonType, Types } from "./pokemonmodel";
+import { DamageRelations, Pokemon, PokemonDTO } from "./pokemonmodel";
 
 export let pokemons: Pokemon[] = [];
 
@@ -8,18 +8,22 @@ export async function loadpokemons(pm: any) { pokemons = pm }
 
 const config = require("../config.json")
 
-export async function map(poke: PokemonDTO[], dmgrelat: DamageRelations): Promise<Pokemon[]> {
+export function map(poke: PokemonDTO[], dmgrelat: DamageRelations): Pokemon[] {
     poke.forEach((pokemon: any) => mapsingle);
     return pokemons;
 }
-
-export async function mapsingle(pokemon: any, dmgrelat: any) {
-    let types: PokemonType[] = pokemon.types?.map((element: { type: { name: Types } }) => element.type.name);
-    pokemons.push({
-        name: pokemon.info?.name,
-        id: pokemon.info?.id,
+export function mapsingle(pokemondto: PokemonDTO, dmgrelat: DamageRelations[]): Pokemon {
+    let types: string[] = [];
+    pokemondto.types?.forEach((pokemontype) => {
+        if (pokemontype.type?.name) {
+            types.push(pokemontype.type.name);
+        }
+    })
+    return {
+        id: pokemondto.id,
+        name: pokemondto.name,
         type: types,
-        hp: Math.random() * (config.maxrandHealth - config.minrandHealth) + config.minrandHealth,
+        hp: Math.floor(Math.random() * (config.maxrandHealth - config.minrandHealth) + config.minrandHealth),
         dmgrelat: dmgrelat
-    });
+    };
 }

@@ -3,7 +3,7 @@
     "toRequest": 50,
     "requestMultiplier": 5,
     "forceCache": false,
-    "enumarably": false,
+    "enumarably": true,
     "tableName": "pokemons",
     "teamSize": 5,
     "minrandHealth": 100,

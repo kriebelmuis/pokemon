@@ -1,12 +1,17 @@
 import { promises } from "fs";
 
 import { fetchpokemon, fetchpokemoninfo, fetchalltypes, fetchdamagerelations } from "./fetchpokemon";
-import { map, mapsingle, pokemons } from "./mappokemon";
-import { PokemonDTO, Pokemon, PokemonType, DamageRelations, AttackType } from "./pokemonmodel";
+import { mapsingle, pokemons } from "./mappokemon";
+import { Pokemon, PokemonType, AttackType, Types } from "./pokemonmodel";
 
 export let offset = 0;
 export let types: string[] = [];
-export let attacktypes: AttackType[] = [];
+export let attacktypes: AttackType[] = [
+    {
+        name: "tackle",
+        damage: 20
+    }
+];
 
 export async function setoffset(num: number) { offset = num }
 
@@ -17,31 +22,28 @@ async function filltypes() {
 filltypes();
 
 export default class PokemonRepository {
-    public async getpokemon(amount: number) {
-        let pokemondto = await fetchpokemon(amount)
-        if (!pokemondto)
+    public async getpokemon(amount: number): Promise<Pokemon[]> {
+        let pokemonsdto = await fetchpokemon(amount)
+        let pokemonsarray: Pokemon[] = [];
+        if (!pokemonsdto)
             throw new Error("Couldn't retrieve pokemons");
-        for (const element of pokemondto) {
-            if (!element.name) {
-                console.log("Invalid name");
-                return;
-            }
-            let dmgrelat = await fetchdamagerelations(element.name);
-            if (!dmgrelat) {
-                console.log("Invalid damage relations");
-                return;
-            }
-            const pokedto = fetchpokemoninfo(element.name)
-            if (!pokedto) {
-                console.log("Invalid pokeinfo");
-                return;
-            }
-            return await mapsingle(element, dmgrelat);
+        for (const pokemondto of pokemonsdto) {
+            if (!pokemondto.name)
+                throw new Error("Invalid name");
+            const pokemon = await fetchpokemoninfo(pokemondto.name)
+            if (!pokemon || !pokemon.types || !pokemon.types[0].type || !pokemon.types[0].type.name)
+                throw new Error("Invalid info")
+            let dmgrelat = await fetchdamagerelations(pokemon.types[0].type.name);
+            if (!dmgrelat)
+                throw new Error("Invalid damage relations");
+            pokemonsarray.push(mapsingle(pokemon, dmgrelat));
         }
+        console.log(pokemonsarray)
+        return pokemonsarray;
     }
 
-    public async writecache() {
-        await promises.writeFile(`./cache.json`, JSON.stringify(pokemons, null, 4));
+    public async writecache(pokes: Pokemon[]) {
+        await promises.writeFile(`./cache.json`, JSON.stringify(pokes, null, 4));
         console.log("File written");
     }
 
@@ -49,7 +51,7 @@ export default class PokemonRepository {
         if (!type)
             return Promise.reject(new Error("Type is missing"));
         if ((types: any[]) => types.every((type: any) => types.includes(type))) {
-            const data = pokemons.filter((pokemon) => type.every(type => pokemon.type?.includes(type as PokemonType)));
+            const data = pokemons.filter((pokemon) => type.every(type => pokemon.type?.includes(type)));
             if (!data)
                 return Promise.reject(new Error("Invalid type"));
             if (data.length === 0)

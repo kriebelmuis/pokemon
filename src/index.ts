@@ -4,7 +4,7 @@ import { pokemons, resetpokemons, loadpokemons } from "./mappokemon";
 import PokemonRepository from "./pokemonrepo";
 import fs from "fs";
 import mysql2 from "mysql2";
-import { DamageRelations, DoubleDamageFrom, DoubleDamageTo, HalfDamageFrom, HalfDamageTo, NoDamageFrom, NoDamageTo, Pokemon } from "./pokemonmodel";
+import { DamageRelations, DoubleDamageTo, HalfDamageTo, NoDamageTo, Pokemon } from "./pokemonmodel";
 import { attacktypes } from "./pokemonrepo";
 
 const repository = new PokemonRepository();
@@ -28,7 +28,7 @@ process.on('exit', onexit);
 process.on('SIGINT', onexit);
 
 function onexit() {
-    clearteams();
+    wipeteams();
     db.end();
 }
 
@@ -58,7 +58,7 @@ async function attack(attacking: Pokemon, defending: Pokemon, damage: number): P
     console.log(`${attacking.name} does ${calc} damage to ${attacking.name} making their health ${newhp}`)
     if (defending.hp == 0) {
         console.log(`${defending.name} has been killed`)
-        db.query(`DELETE FROM team${defending.team} WHERE name=${defending.name}`, (err) => {
+        db.query(`DELETE FROM team${defending.team} WHERE name=${defending.name};`, (err) => {
             if (err) {
                 console.log(err.message);
                 return;
@@ -76,7 +76,7 @@ async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon 
             if (!defend?.name)
                 return;
             if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives 1.5 damage from ${attack.name}`)
+                console.log(`Damage relation found: ${defend.name} gives 1.5 damage from ${attack.name}`);
                 return 1.5;
             }
         });
@@ -84,7 +84,7 @@ async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon 
             if (!defend?.name)
                 return;
             if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives 0.5 damage from ${attack.name}`)
+                console.log(`Damage relation found: ${defend.name} gives 0.5 damage from ${attack.name}`);
                 return .5;
             }
         });
@@ -92,7 +92,7 @@ async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon 
             if (!defend?.name)
                 return;
             if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives no damage to ${attack.name}`)
+                console.log(`Damage relation found: ${defend.name} gives no damage to ${attack.name}`);
                 return 0;
             }
         });
@@ -104,7 +104,6 @@ async function waitforready() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         console.log("Waiting for pokemons")
     }
-    console.log("Pokemons retrieved")
     newpokemons = pokemons.slice();
 }
 
@@ -116,42 +115,46 @@ const connect = () => {
             setTimeout(connect, 3000);
             return;
         }
-        console.log("Connected");
         await waitforready();
-        await clearteams();
+        await wipeteams();
         const teamone = selectrandom(config.teamSize);
         const teamtwo = selectrandom(config.teamSize);
 
-        await Promise.all(teamone.map(async element => await insertpokemon(element.id, element.name, element.hp, 1)));
-        await Promise.all(teamtwo.map(async element => await insertpokemon(element.id, element.name, element.hp, 2)));
-
-        console.log("All pokemons ready");
-
-        db.query("SELECT * FROM team1;", (err, result) => {
-            console.log(`Team 1:\n${JSON.stringify(result, null, 4)}`)
+        teamone.forEach(async (pokemon) => {
+            if (pokemon?.id && pokemon?.name && pokemon?.hp) {
+                await insertpokemon(pokemon?.id, pokemon?.name, pokemon?.hp, 1)
+            }
+            else {
+                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp}`)
+            }
         })
-
-        db.query("SELECT * FROM team2;", (err, result) => {
-            console.log(`Team 2:\n${JSON.stringify(result, null, 4)}`)
+        teamtwo.forEach(async (pokemon) => {
+            if (pokemon?.id && pokemon?.name && pokemon?.hp) {
+                await insertpokemon(pokemon?.id, pokemon?.name, pokemon?.hp, 2)
+            }
+            else {
+                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp}`)
+            }
         })
     });
 };
 connect();
 
-
 function selectrandom(teamsize: number) {
     console.log(`Selecting random ${teamsize} pokemon`)
     const array = [];
+    const length = newpokemons.length
+    console.log(JSON.stringify(newpokemons, null, 4))
     for (let i = 0; i < teamsize; i++) {
-        const index = Math.floor(Math.random() * newpokemons.length);
-        console.log(`Randomized index ${index}`)
-        array.push(newpokemons[index])
-        newpokemons.splice(index, 1)
+        const index = Math.floor(Math.random() * length);
+        console.log(`Randomized index ${index} with max ${length}`);
+        array.push(newpokemons[index]);
+        newpokemons.splice(index, 1);
     }
     return array;
 }
 
-async function clearteams() {
+async function wipeteams() {
     console.log("Clearing teams")
     db.query(`DELETE FROM team1;`, (err) => {
         if (err) {
@@ -170,8 +173,8 @@ async function clearteams() {
 }
 
 async function insertpokemon(id: number | undefined, name: string | undefined, hp: number | undefined, team: number | undefined) {
-    if (id || name || team !== undefined) {
-        console.log(`Inserting pokemon with id ${id} name ${name} and hp ${hp} in table team${team}`);
+    console.log(`Inserting pokemon with id ${id} name ${name} and hp ${hp} in table team${team}`);
+    if (id != undefined || !name != undefined || !team != undefined) {
         db.query(`INSERT INTO team${team} (id, name, hp) VALUES (${id}, "${name}", ${hp});`, (err) => {
             if (err) {
                 console.log(err.message);
@@ -245,29 +248,32 @@ app.get("/", async (req: Request<PokemonRequest>, res: Response) => {
 async function indexallpokemon() {
     resetpokemons();
     console.log("Indexing all pokemon")
-    await repository.getpokemon(config.allPokemon);
+    var data = await repository.getpokemon(config.allPokemon);
+    loadpokemons(data);
     app.listen(80);
-    await repository.writecache();
+    await repository.writecache(data);
     ready = true;
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
 
 async function enumarablyindexallpokemon() {
     resetpokemons();
+    let pokes: Pokemon[] = [];
     for (let i = 0; i < config.requestMultiplier; i++) {
-        await repository.getpokemon(config.toRequest);
+        pokes.concat(await repository.getpokemon(config.toRequest));
         console.log(`Indexation progress: ${i}/${config.requestMultiplier}`);
     }
+    loadpokemons(pokes);
     app.listen(80);
-    await repository.writecache();
+    await repository.writecache(pokes);
     ready = true;
     console.log(`Finished indexing ${pokemons.length} pokemon`);
 }
 
-fs.access("./cache.json", (err: any) => {
+fs.access("./cache.json", async (err: any) => {
     if (err || config.forceCache) {
         console.log("No cache found, creating");
-        config.enumarably ? enumarablyindexallpokemon() : indexallpokemon();
+        config.enumarably ? await enumarablyindexallpokemon() : await indexallpokemon();
         return;
     }
     loadpokemons(require("../cache.json"));

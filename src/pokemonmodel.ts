@@ -43,6 +43,11 @@ export class Version {
 }
 
 export class Types {
+    slot?: number;
+    type?: Type;
+}
+
+export class Type {
     name?: string;
     url?: string;
 }
@@ -105,7 +110,7 @@ export class Pokemon {
     id?: number;
     name?: string;
     team?: number;
-    type?: PokemonType[];
+    type?: string[];
     hp?: number;
     dmgrelat?: DamageRelations[];
 }
