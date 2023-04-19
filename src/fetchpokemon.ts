@@ -8,7 +8,7 @@ export async function fetchalltypes() {
     return (await axios.get("https://pokeapi.co/api/v2/type/")).data.results
 }
 
-export async function fetchdamagerelations(nameorid: string | number): Promise<DamageRelations[] | null> {
+export async function fetchdamagerelations(nameorid: string | number): Promise<DamageRelations | null> {
     return (await axios.get(`https://pokeapi.co/api/v2/type/${nameorid}/`)).data.damage_relations;
 }
 

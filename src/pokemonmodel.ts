@@ -112,7 +112,7 @@ export class Pokemon {
     team?: number;
     type?: string[];
     hp?: number;
-    dmgrelat?: DamageRelations[];
+    dmgrelat?: DamageRelations;
 }
 
 export class PokemonType {

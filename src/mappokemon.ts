@@ -12,7 +12,7 @@ export function map(poke: PokemonDTO[], dmgrelat: DamageRelations): Pokemon[] {
     poke.forEach((pokemon: any) => mapsingle);
     return pokemons;
 }
-export function mapsingle(pokemondto: PokemonDTO, dmgrelat: DamageRelations[]): Pokemon {
+export function mapsingle(pokemondto: PokemonDTO, dmgrelat: DamageRelations): Pokemon {
     let types: string[] = [];
     pokemondto.types?.forEach((pokemontype) => {
         if (pokemontype.type?.name) {

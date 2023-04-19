@@ -4,7 +4,7 @@ import { pokemons, resetpokemons, loadpokemons } from "./mappokemon";
 import PokemonRepository from "./pokemonrepo";
 import fs from "fs";
 import mysql2 from "mysql2";
-import { DamageRelations, DoubleDamageTo, HalfDamageTo, NoDamageTo, Pokemon } from "./pokemonmodel";
+import { DoubleDamageTo, HalfDamageTo, NoDamageTo, Pokemon } from "./pokemonmodel";
 import { attacktypes } from "./pokemonrepo";
 
 const repository = new PokemonRepository();
@@ -32,71 +32,65 @@ function onexit() {
     db.end();
 }
 
-async function attack(attacking: Pokemon, defending: Pokemon, damage: number): Promise<number | undefined> {
+async function attack(attacking: Pokemon, defending: Pokemon, damage: number): Promise<string> {
     if (!attacking.type || !defending.type || !attacking.hp || !defending.hp)
-        return;
+        return "Attacker or defender type or hp is undefined";
     if (attacking.hp <= 0) {
-        console.log("Attacker dead")
+        return "Attacker is dead";
     }
     if (defending.hp <= 0) {
-        console.log("Defender already dead")
+        return "Defender is dead";
     }
     const mult = await checkmultiplication(attacking, defending)
-    if (!defending.hp) {
-        console.log("Invalid health");
-        return;
-    }
-    if (!mult) {
-        console.log("Invalid multiplier");
-        return;
-    }
+    if (!defending.hp)
+        return "Invalid health";
+    if (!mult)
+        return "Invalid multiplier";
     const calc = damage * mult;
     let newhp = defending.hp - calc;
     if (newhp < 0)
         newhp = 0;
     defending.hp = newhp;
-    console.log(`${attacking.name} does ${calc} damage to ${attacking.name} making their health ${newhp}`)
     if (defending.hp == 0) {
         console.log(`${defending.name} has been killed`)
         db.query(`DELETE FROM team${defending.team} WHERE name=${defending.name};`, (err) => {
             if (err) {
                 console.log(err.message);
-                return;
             }
-            console.log(`${defending.name} has been removed from their team table`);
+            console.log(`Pokemon ${defending.name} removed`)
         })
     }
+    return `${attacking.name} does ${calc} damage to ${attacking.name} making their health ${newhp} with a ${mult}x multiplier`;
 }
 
 async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon | undefined): Promise<number | undefined> {
     if (!attack || !defend)
         return;
-    attack.dmgrelat?.forEach((relation: DamageRelations) => {
-        relation.double_damage_to?.forEach((element: DoubleDamageTo) => {
-            if (!defend?.name)
-                return;
-            if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives 1.5 damage from ${attack.name}`);
-                return 1.5;
-            }
-        });
-        relation.half_damage_to?.forEach((element: HalfDamageTo) => {
-            if (!defend?.name)
-                return;
-            if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives 0.5 damage from ${attack.name}`);
-                return .5;
-            }
-        });
-        relation.no_damage_to?.forEach((element: NoDamageTo) => {
-            if (!defend?.name)
-                return;
-            if (element.name?.includes(defend.name)) {
-                console.log(`Damage relation found: ${defend.name} gives no damage to ${attack.name}`);
-                return 0;
-            }
-        });
+    attack.dmgrelat?.double_damage_to?.forEach((element: DoubleDamageTo) => {
+        if (!defend?.name)
+            return;
+        if (element.name?.includes(defend?.name)) {
+            console.log(`Damage relation found: ${defend?.name} gives 1.5 damage from ${attack?.name}`);
+            return 1.5;
+        }
     });
+    attack.dmgrelat?.half_damage_to?.forEach((element: HalfDamageTo) => {
+        if (!defend?.name)
+            return;
+        if (element.name?.includes(defend?.name)) {
+            console.log(`Damage relation found: ${defend?.name} gives 0.5 damage from ${attack?.name}`);
+            return .5;
+        }
+    });
+    attack.dmgrelat?.no_damage_to?.forEach((element: NoDamageTo) => {
+        if (!defend?.name)
+            return;
+        if (element.name?.includes(defend?.name)) {
+            console.log(`Damage relation found: ${defend?.name} gives no damage to ${attack?.name}`);
+            return 0;
+        }
+    });
+    return 1;
 }
 
 async function waitforready() {
@@ -122,18 +116,20 @@ const connect = () => {
 
         teamone.forEach(async (pokemon) => {
             if (pokemon?.id && pokemon?.name && pokemon?.hp) {
+                pokemon.team = 1;
                 await insertpokemon(pokemon?.id, pokemon?.name, pokemon?.hp, 1)
             }
             else {
-                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp}`)
+                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp} ${pokemon?.team}`)
             }
         })
         teamtwo.forEach(async (pokemon) => {
             if (pokemon?.id && pokemon?.name && pokemon?.hp) {
+                pokemon.team = 2;
                 await insertpokemon(pokemon?.id, pokemon?.name, pokemon?.hp, 2)
             }
             else {
-                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp}`)
+                console.log(`${pokemon?.id} ${pokemon?.name} ${pokemon?.hp} ${pokemon?.team}`)
             }
         })
     });
@@ -204,30 +200,22 @@ app.post("/attack", async (req: Request<Attack>, res: Response) => {
     const defender = pokemons.filter(def => def.name?.includes(req.query.defender as string))[0];
 
     if (!dmg) {
-        console.log("Couldn't find attack")
+        res.status(404).send("Couldn't find attack")
     }
     if (!attacker) {
-        console.log(`Couldn't find attack pokemon with name ${attacker}`)
+        res.status(404).send(`Couldn't find attack pokemon with name ${attacker}`)
     }
     if (!defender) {
-        console.log(`Couldn't find defender pokemon with name ${defender}`)
+        res.status(404).send(`Couldn't find defender pokemon with name ${defender}`)
     }
 
-    db.query(`SELECT ${attacker} FROM team1`, async (err) => {
+    db.query(`SELECT * FROM team1 WHERE name = '${attacker.name}'; `, async (err) => {
         if (err) {
-            db.query(`SELECT ${attacker} FROM team2`, async (error) => {
-                if (error) {
-                    res.send(`Error: ${error.message}`)
-                    return;
-                }
-                attacker.team = 2;
-                if (dmg.damage)
-                    res.send(await attack(attacker, defender, dmg.damage));
-            })
+            res.status(409).send(`Error: ${err.message}`)
+            return;
         }
-        attacker.team = 1;
         if (dmg.damage)
-            res.send(await attack(attacker, defender, dmg.damage));
+            res.status(200).send(await attack(attacker, defender, dmg.damage));
     })
 })
 
