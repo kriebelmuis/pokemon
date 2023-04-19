@@ -197,7 +197,7 @@ interface Attack {
     defender: string;
 }
 
-app.get("/attack", async (req: Request<Attack>, res: Response) => {
+app.post("/attack", async (req: Request<Attack>, res: Response) => {
     await waitforready();
     const dmg = attacktypes.filter(att => att.name?.includes(req.query.attacktype as string))[0];
     const attacker = pokemons.filter(att => att.name?.includes(req.query.attacker as string))[0];
