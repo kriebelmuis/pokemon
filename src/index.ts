@@ -34,13 +34,18 @@ const db = mysql2.createConnection({
     database: "pokemon"
 });
 
-process.on('exit', onexit);
-process.on('SIGINT', onexit);
-
-function onexit() {
+function exitHandler(opt: any, code: any) {
     wipeteams();
     db.end();
+    if (code || code === 0) console.log(code);
+    if (opt.exit) process.exit();
 }
+
+process.on('exit', exitHandler.bind(null, { cleanup: true }));
+process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
+process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
+process.on('uncaughtException', exitHandler.bind(null, { exit: true }));
 
 async function attack(attacking: Pokemon, defending: Pokemon, damage: number): Promise<string> {
     if (!attacking.type || !defending.type || !attacking.hp || !defending.hp)
