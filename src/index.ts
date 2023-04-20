@@ -1,11 +1,21 @@
 import express, { Request, Response } from "express";
+import fs from "fs";
+import mysql2 from "mysql2";
 
 import { pokemons, resetpokemons, loadpokemons } from "./mappokemon";
 import PokemonRepository from "./pokemonrepo";
-import fs from "fs";
-import mysql2 from "mysql2";
 import { DoubleDamageTo, HalfDamageTo, NoDamageTo, Pokemon } from "./pokemonmodel";
 import { attacktypes } from "./pokemonrepo";
+
+interface PokemonRequest {
+    type: string;
+}
+
+interface Attack {
+    attacktype: string;
+    attacker: string;
+    defender: string;
+}
 
 const repository = new PokemonRepository();
 const app = express();
@@ -192,16 +202,6 @@ async function insertpokemon(id: number | undefined, name: string | undefined, h
     } else {
         console.log(`One of the properties of ${name} are undefined`)
     }
-}
-
-interface PokemonRequest {
-    type: string;
-}
-
-interface Attack {
-    attacktype: string;
-    attacker: string;
-    defender: string;
 }
 
 app.post("/attack", async (req: Request<Attack>, res: Response) => {

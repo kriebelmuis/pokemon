@@ -2,7 +2,7 @@ import { promises } from "fs";
 
 import { fetchpokemon, fetchpokemoninfo, fetchalltypes, fetchdamagerelations } from "./fetchpokemon";
 import { mapsingle, pokemons } from "./mappokemon";
-import { Pokemon, PokemonType, AttackType, Types } from "./pokemonmodel";
+import { Pokemon, AttackType, Types } from "./pokemonmodel";
 
 export let offset = 0;
 export let types: string[] = [];
