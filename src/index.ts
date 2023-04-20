@@ -51,6 +51,7 @@ async function attack(attacking: Pokemon, defending: Pokemon, damage: number): P
     if (newhp < 0)
         newhp = 0;
     defending.hp = newhp;
+    await updatecolomn("hp", newhp, "name", defending.name, `team${defending.team}`);
     if (defending.hp == 0) {
         console.log(`${defending.name} has been killed`)
         db.query(`DELETE FROM team${defending.team} WHERE name=${defending.name};`, (err) => {
@@ -61,6 +62,16 @@ async function attack(attacking: Pokemon, defending: Pokemon, damage: number): P
         })
     }
     return `${attacking.name} does ${calc} damage to ${attacking.name} making their health ${newhp} with a ${mult}x multiplier`;
+}
+
+async function updatecolomn(colomn: string, colomnval: any, row: string, rowval: any, table: string) {
+    db.query(`UPDATE ${table} SET ${colomn} = ${colomnval} WHERE ${row} = '${rowval}'`, (err) => {
+        if (err) {
+            console.log(err.message);
+            return;
+        }
+        console.log(`Table: ${table}\nColomn: ${colomn}\nColomn value: ${colomnval}\n\nrow: ${row}\nRow value: ${rowval}`);
+    });
 }
 
 async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon | undefined): Promise<number | undefined> {
