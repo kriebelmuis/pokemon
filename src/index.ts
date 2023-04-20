@@ -63,15 +63,21 @@ async function attack(attacking: Pokemon, defending: Pokemon, damage: number): P
     defending.hp = newhp;
     await updatecolomn("hp", newhp, "name", defending.name, `team${defending.team}`);
     if (defending.hp == 0) {
+        const defteam = db.query(`SELECT COUNT(*) FROM team${defending.team};`)
+        const atteam = db.query(`SELECT COUNT(*) FROM team${attacking.team};`)
+        if (defteam <= config.teamSize) {
+            console.log(`Team ${attacking.team} wins! With ${atteam} pokemons left in their team`);
+            process.exit();
+        }
         console.log(`${defending.name} has been killed`)
         db.query(`DELETE FROM team${defending.team} WHERE name=${defending.name};`, (err) => {
             if (err) {
                 console.log(err.message);
             }
-            console.log(`Pokemon ${defending.name} removed`)
+            console.log(`Pokemon ${defending.name} removed`);
         })
     }
-    return `${attacking.name} does ${calc} damage to ${attacking.name} making their health ${newhp} with a ${mult}x multiplier`;
+    return `${attacking.name} does ${calc} damage to ${defending.name} making their health ${newhp} with a ${mult}x multiplier`;
 }
 
 async function updatecolomn(colomn: string, colomnval: any, row: string, rowval: any, table: string) {
@@ -85,33 +91,44 @@ async function updatecolomn(colomn: string, colomnval: any, row: string, rowval:
 }
 
 async function checkmultiplication(attack: Pokemon | undefined, defend: Pokemon | undefined): Promise<number | undefined> {
+    let mult = 1;
     if (!attack || !defend)
         return;
+    console.log(`Checking multiplication for attacker ${attack.name} and defender ${defend.name}`)
     attack.dmgrelat?.double_damage_to?.forEach((element: DoubleDamageTo) => {
-        if (!defend?.name)
+        if (!defend?.type)
             return;
-        if (element.name?.includes(defend?.name)) {
-            console.log(`Damage relation found: ${defend?.name} gives 1.5 damage from ${attack?.name}`);
-            return 1.5;
-        }
+        defend?.type.forEach((type) => {
+            console.log(`Checking if ${element.name} is equal to ${type} for 1.5x`);
+            if (element.name?.includes(type)) {
+                console.log(`Damage relation found: ${defend?.name} gives 1.5 damage from ${attack?.name}`);
+                mult = 1.5;
+            }
+        })
     });
     attack.dmgrelat?.half_damage_to?.forEach((element: HalfDamageTo) => {
-        if (!defend?.name)
+        if (!defend?.type)
             return;
-        if (element.name?.includes(defend?.name)) {
-            console.log(`Damage relation found: ${defend?.name} gives 0.5 damage from ${attack?.name}`);
-            return .5;
-        }
+        defend?.type.forEach((type) => {
+            console.log(`Checking if ${element.name} is equal to ${type} for .5x`);
+            if (element.name?.includes(type)) {
+                console.log(`Damage relation found: ${defend?.name} gives 0.5 damage from ${attack?.name}`);
+                mult = .5;
+            }
+        })
     });
     attack.dmgrelat?.no_damage_to?.forEach((element: NoDamageTo) => {
-        if (!defend?.name)
+        if (!defend?.type)
             return;
-        if (element.name?.includes(defend?.name)) {
-            console.log(`Damage relation found: ${defend?.name} gives no damage to ${attack?.name}`);
-            return 0;
-        }
+        defend?.type.forEach((type) => {
+            console.log(`Checking if ${element.name} is equal to ${type} for 0x`);
+            if (element.name?.includes(type)) {
+                console.log(`Damage relation found: ${defend?.name} gives no damage to ${attack?.name}`);
+                mult = 0;
+            }
+        })
     });
-    return 1;
+    return mult;
 }
 
 async function waitforready() {
@@ -161,7 +178,6 @@ function selectrandom(teamsize: number) {
     console.log(`Selecting random ${teamsize} pokemon`)
     const array = [];
     const length = newpokemons.length
-    console.log(JSON.stringify(newpokemons, null, 4))
     for (let i = 0; i < teamsize; i++) {
         const index = Math.floor(Math.random() * length);
         console.log(`Randomized index ${index} with max ${length}`);
@@ -210,14 +226,17 @@ app.post("/attack", async (req: Request<Attack>, res: Response) => {
     const attacker = pokemons.filter(att => att.name?.includes(req.query.attacker as string))[0];
     const defender = pokemons.filter(def => def.name?.includes(req.query.defender as string))[0];
 
+    if (attacker.name === defender.name) {
+        res.status(409).send("Attacker and defender are the same")
+    }
     if (!dmg) {
-        res.status(404).send("Couldn't find attack")
+        res.status(409).send("Couldn't find attack")
     }
     if (!attacker) {
-        res.status(404).send(`Couldn't find attack pokemon with name ${attacker}`)
+        res.status(409).send(`Couldn't find attack pokemon with name ${attacker}`)
     }
     if (!defender) {
-        res.status(404).send(`Couldn't find defender pokemon with name ${defender}`)
+        res.status(409).send(`Couldn't find defender pokemon with name ${defender}`)
     }
 
     db.query(`SELECT * FROM team1 WHERE name = '${attacker.name}'; `, async (err) => {
