@@ -34,10 +34,10 @@ const db = mysql2.createConnection({
     database: "pokemon"
 });
 
-function exitHandler(opt: any, code: any) {
-    wipeteams();
-    db.end();
+async function exitHandler(opt: any, code: any) {
     if (code || code === 0) console.log(code);
+    await wipeteams();
+    await db.end();
     if (opt.exit) process.exit();
 }
 
